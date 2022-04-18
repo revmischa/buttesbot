@@ -1,0 +1,12 @@
+version: "3.8"
+services:
+  bot:
+    restart: unless-stopped
+    build:
+      context: .
+    volumes:
+      - ${PWD}:/code
+      - node_modules:/code/node_modules
+    command: ls -al /code
+volumes:
+  node_modules:

@@ -1,0 +1,32 @@
+{
+  "name": "buttesbot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "sst test",
+    "start": "AWS_PROFILE=mish sst start",
+    "build": "sst build",
+    "deploy": "AWS_PROFILE=mish sst deploy",
+    "remove": "sst remove"
+  },
+  "eslintConfig": {
+    "extends": [
+      "serverless-stack"
+    ]
+  },
+  "dependencies": {
+    "got": "^12.0.3",
+    "tcl": "^3.0.0"
+  },
+  "devDependencies": {
+    "@serverless-stack/cli": "0.69.6",
+    "@serverless-stack/resources": "0.69.6",
+    "@types/aws-lambda": "^8.10.70",
+    "@types/node": "<15.0.0",
+    "aws-cdk-lib": "2.15.0",
+    "esbuild": "^0.14.36",
+    "esmo": "^0.14.1",
+    "typescript": "4.4.4"
+  }
+}

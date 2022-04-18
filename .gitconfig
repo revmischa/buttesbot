@@ -1,0 +1,66 @@
+[core]
+	excludesfile = /Users/cyber/.gitignore
+[merge]
+        renamelimit = 6000
+	ff = false
+[push]
+        default = tracking
+[alias]
+    mm = merge master -m "Merging in master"
+    lo = graph --decorate --all --oneline --stat
+    st = status
+    stat = status
+    ci = commit
+    br = branch
+    co = checkout
+    di = diff
+    lg = log -p
+    tags = tag -ln
+    pom = pull origin master
+    rbc = rebase --continue
+    dlog = log -u HEAD~500..HEAD --
+    lg = log -p
+    pnv = push --no-verify
+    pso = push --set-upstream origin 
+    up = !sh -c 'git pull --rebase --prune && git log --pretty=format:\"%Cred%ae %Creset- %C(yellow)%s %Creset(%ar)\" HEAD@{1}..'
+    lol = log --graph --decorate --pretty=oneline --abbrev-commit
+    lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
+    ls = ls-files
+    diverges = !bash -c 'diff -u <(git rev-list --first-parent "${1}") <(git rev-list --first-parent "${2:-HEAD}") | sed -ne \"s/^ //p\" | head -1' -
+    rb = ! git for-each-ref --sort=-committerdate --count=10 --format='%(authorname),%(color:bold yellow)%(refname:short)%(color:reset) (%(color:bold magenta)%(committerdate:relative)%(color:reset)) %(color:cyan)%(objectname:short)%(color:reset) - %(color:dim white)%(contents:subject)%(color:reset)' refs/heads/
+    rrb = ! git for-each-ref --sort=-committerdate --count=10 --format='%(authorname),%(color:bold yellow)%(refname:short)%(color:reset) (%(color:bold magenta)%(committerdate:relative)%(color:reset)) %(color:cyan)%(objectname:short)%(color:reset) - %(color:dim white)%(contents:subject)%(color:reset)' refs/remotes/origin/
+
+[user]
+	name = Mischa Spiegelmock
+	email = me@mish.dev
+[color]
+	diff = auto
+	status = auto
+	branch = auto
+
+[filter "media"]
+	required = true
+	clean = git media clean %f
+	smudge = git media smudge %f
+[help]
+	autocorrect = 3
+[http]
+	cookiefile = /Users/bobo/.gitcookies
+[filter "lfs"]
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+[branch "master"]
+	rebase = true
+[github]
+	user = revmischa
+[pull]
+	rebase = true
+# [merge "npm-merge-driver"]
+	# name = automatically merge npm lockfiles
+	# driver = npx npm-merge-driver merge %A %O %B %P
+[init]
+	defaultBranch = master
+[credential]
+	helper = "!f() { /code/.vscode-server/bin/dfd34e8260c270da74b5c2d86d61aee4b6d56977/node /tmp/vscode-remote-containers-7eac6afeca47600ae8fca305fe9d4de73e47eb37.js $*; }; f"
