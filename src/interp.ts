@@ -49,7 +49,7 @@ export class Interp {
     );
   }
 
-  cmd(cmd: string): string {
+  eval(cmd: string): string {
     // set exec context
     this.tcl.cmdSync(`namespace eval context {
       variable nick "you"
@@ -68,7 +68,7 @@ export class Interp {
       this.tcl.$.set("result", `{200 "${val}"}`);
     });
 
-    const res = this.tcl.cmdSync(cmd);
+    const res = this.tcl.evalSync(cmd);
     return res.data();
   }
 

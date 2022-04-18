@@ -16,13 +16,18 @@
     ]
   },
   "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.72.0",
+    "@slack/bolt": "^3.11.0",
+    "@slack/web-api": "^6.7.1",
     "got": "^12.0.3",
+    "memoizee": "^0.4.15",
     "tcl": "^3.0.0"
   },
   "devDependencies": {
     "@serverless-stack/cli": "0.69.6",
     "@serverless-stack/resources": "0.69.6",
     "@types/aws-lambda": "^8.10.70",
+    "@types/memoizee": "^0.4.7",
     "@types/node": "<15.0.0",
     "aws-cdk-lib": "2.15.0",
     "esbuild": "^0.14.36",
