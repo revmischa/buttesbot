@@ -15,7 +15,9 @@ npm install
 npx esmo run.ts fatgoon
 ```
 
-```
+Output:
+
+```shell
 Command fatgoon
 ---
 
