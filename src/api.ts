@@ -5,6 +5,7 @@ import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import memoizee from "memoizee";
 import { EvalContext, getInterp } from "./interp";
 import { getSecrets } from "./secret";
+import { stripColor } from "./util";
 
 const getSlackWeb = memoizee(async () => {
   const secrets = await getSecrets();
@@ -59,8 +60,9 @@ const handleMessage = async (event: GenericMessageEvent) => {
     ok = false;
   }
 
-  const escaped = res.replace(/&/g, "&amp;").replace(/<(?![#@])/g, "&lt;");
+  let escaped = res.replace(/&/g, "&amp;").replace(/<(?![#@])/g, "&lt;");
   // .replace(/>/g, "&gt;");
+  escaped = stripColor(escaped);
 
   const slackWeb = await getSlackWeb();
   await slackWeb.chat.postMessage({

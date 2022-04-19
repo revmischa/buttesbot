@@ -29,7 +29,7 @@ namespace eval meta_proc {
     if {$command eq ""} {
       error "wrong # of args: should be \"$name command ?arg arg ...?\"\n[::stacktrace]"
     } elseif {[llength $matches] == 0} {
-      error "bad command \"$command\": must be $usage"
+      error "bad command \"$command\": must be $usage\n[::stacktrace]"
     } elseif {[llength $matches] > 1} {
       error "ambiguous command \"$command\": must be $usage"
     } else {

@@ -53,7 +53,7 @@ export class Interp {
         "mvs",
         "ollipekka",
         "mdl",
-        "danh",
+        "dantifa",
         "t12",
         "snb",
         "mwnd",
@@ -137,8 +137,7 @@ export class Interp {
 
     // const toEval = "namespace eval commands {" + cmd + "};";
     const toEval = cmd;
-    console.log("toEval:", `'${toEval}'`);
-
+    // console.log("toEval:", `'${toEval}'`);
     const res = this.tcl.evalSync(toEval);
     return res.data();
   }
