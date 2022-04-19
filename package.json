@@ -5,7 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "test": "sst test",
-    "start": "AWS_PROFILE=mish sst start",
+    "start": "AWS_PROFILE=mish SMEGGDROP_ROOT=./smeggdrop sst start",
     "build": "sst build",
     "deploy": "AWS_PROFILE=mish sst deploy",
     "remove": "sst remove"

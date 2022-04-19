@@ -10,3 +10,4 @@ RUN cp /usr/lib64/libtcl8.5.so /asset/lib/
 WORKDIR /asset/lib
 RUN ln -s libtcl8.5.so libtcl.so
 RUN cp -rp /usr/share/tcl8.5 ./
+COPY ../smeggdrop /asset/lib/smeggdrop

@@ -24,6 +24,7 @@ export default class MainStack extends sst.Stack {
       environment: {
         SECRET_ARN: secret.secretArn,
         TCL_LIBRARY: "/opt/lib/tcl8.5",
+        SMEGGDROP_ROOT: process.env.SMEGGDROP_ROOT,
       },
       bundle: {
         // format: "esm",
