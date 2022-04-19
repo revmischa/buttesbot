@@ -23,10 +23,12 @@ export default class MainStack extends sst.Stack {
       runtime: "nodejs14.x",
       environment: {
         SECRET_ARN: secret.secretArn,
+        TCL_LIBRARY: "/opt/lib/tcl8.5",
       },
       bundle: {
-        format: "esm",
+        // format: "esm",
         externalModules: ["tcl", "node-addon-api", "bindings"],
+        copyFiles: [{ from: "state" }],
       },
       timeout: 30,
       permissions: [[secret, "grantRead"]],
@@ -36,7 +38,7 @@ export default class MainStack extends sst.Stack {
     const api = new sst.Api(this, "Api", {
       routes: {
         "POST /event": "src/http.eventHandler",
-        "POST /eval": "src/http.evalHandler",
+        // "POST /eval": "src/http.evalHandler",
         "GET /auth": "src/http.authHandler",
         "GET /oauth/complete": "src/http.authCompleteHandler",
       },

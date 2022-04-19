@@ -1,6 +1,13 @@
 import { loadState } from "./state";
 import { Tcl } from "tcl";
 import got from "got";
+import memoizee from "memoizee";
+
+export const getInterp = memoizee(async () => {
+  const interp = new Interp();
+  await interp.loadState();
+  return interp;
+});
 
 export class Interp {
   tcl;

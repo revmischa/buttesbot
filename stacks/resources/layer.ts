@@ -7,8 +7,8 @@ export class TclLayer extends LayerVersion {
     id: string,
     props: Partial<LayerVersionProps> = {}
   ) {
-    // const code = Code.fromDockerBuild("layer");
-    const code = Code.fromAsset("layer/tcl.zip");
+    const code = Code.fromDockerBuild("layer");
+    // const code = Code.fromAsset("layer/tcl.zip");
 
     super(scope, id, {
       ...props,

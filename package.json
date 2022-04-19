@@ -2,7 +2,7 @@
   "name": "buttesbot",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "test": "sst test",
     "start": "AWS_PROFILE=mish sst start",

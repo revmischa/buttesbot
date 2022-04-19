@@ -1,15 +1,14 @@
-import { APIGatewayProxyHandlerV2 } from "aws-lambda";
-import { Interp } from "./interp";
+import { GenericMessageEvent } from "@slack/bolt";
 import { WebClient } from "@slack/web-api";
+import { APIGatewayProxyHandlerV2 } from "aws-lambda";
+import memoizee from "memoizee";
+import { getInterp } from "./interp";
 import { getSecrets } from "./secret";
-import { GenericMessageEvent, MessageEvent } from "@slack/bolt";
 
-const interp = new Interp();
-await interp.loadState();
-
-const secrets = await getSecrets();
-const slackWeb = new WebClient(secrets.SLACK_KEY);
-console.log("KEY", secrets.SLACK_KEY);
+const getSlackWeb = memoizee(async () => {
+  const secrets = await getSecrets();
+  return new WebClient(secrets.SLACK_KEY);
+});
 
 export const eventHandler: APIGatewayProxyHandlerV2 = async (event) => {
   const { body } = event;
@@ -35,29 +34,40 @@ export const eventHandler: APIGatewayProxyHandlerV2 = async (event) => {
 };
 
 const handleMessage = async (event: GenericMessageEvent) => {
-  if (event.text?.toLocaleLowerCase().startsWith("tcl ")) {
-    const [_, args] = event.text.split("tcl ", 2);
-    const nick = event.user || "you";
+  const interp = await getInterp();
+  if (!event.text?.toLocaleLowerCase().startsWith("tcl ")) return;
 
-    // eval tcl
-    let res, ok;
-    try {
-      res = await interp.eval(`${args}`);
-      ok = true;
-    } catch (ex) {
-      res = ex;
-      ok = false;
-    }
+  const [_, args] = event.text.split("tcl ", 2);
+  const nick = event.user || "you";
 
-    await slackWeb.chat.postMessage({
-      attachments: [
-        {
-          pretext: "```\n" + res + "\n```",
-        },
-      ],
-      channel: event.channel,
-    });
+  // eval tcl
+  let res: string, ok;
+  try {
+    res = await interp.eval(`${args}`);
+    ok = true;
+  } catch (ex) {
+    res = (ex as any).toString();
+    ok = false;
   }
+
+  const escaped = res
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  const slackWeb = await getSlackWeb();
+  await slackWeb.chat.postMessage({
+    blocks: [
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: "```\n" + escaped + "\n```",
+        },
+      },
+    ],
+    channel: event.channel,
+  });
 };
 
 export const evalHandler: APIGatewayProxyHandlerV2 = async (event) => {
@@ -66,7 +76,8 @@ export const evalHandler: APIGatewayProxyHandlerV2 = async (event) => {
   const { cmd } = bodyParsed;
   if (!cmd) throw new Error("Missing cmd");
 
-  const res = interp.eval(cmd);
+  // const res = interp.eval(cmd);
+  const res = "n/a";
   return { statusCode: 200, body: res };
 };
 
