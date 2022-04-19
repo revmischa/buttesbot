@@ -15,6 +15,16 @@ npm install
 npx esmo run.ts fatgoon
 ```
 
+```
+Command fatgoon
+---
+
+I ordered about $30 worth of food from             __________
+burger king in 2006, and all the kids working \   (--[ .]-[ .]
+the grill asked if they could have their          (_______O__)
+photo taken with me. That was kind of weird.
+```
+
 ## AWS Commands
 
 ### `npm run start`
