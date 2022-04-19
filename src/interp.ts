@@ -3,7 +3,7 @@ import path from "path";
 import retus from "retus";
 import { Tcl } from "tcl";
 import { loadState } from "./state";
-import { sha1Base64 } from "./util";
+import { sha1 } from "./util";
 
 export const getInterp = memoizee(async () => {
   const interp = new Interp();
@@ -41,9 +41,29 @@ export class Interp {
       const val = body.replace(/"/g, '\\"');
       this.tcl.$.set("result", `{${res.statusCode} "${val}"}`);
     });
-    this.tcl.proc("core::sha1", (val: string): string => {
-      return sha1Base64(val);
+
+    // note that we can't return values from these functions, so we need
+    // to set a result var and wrap it in a proc
+    this.tcl.proc("__sha1", (val: string) => {
+      this.tcl.$.set("_result", sha1(val));
     });
+    this.tcl.proc("__names", () => {
+      // should return list of names in the channel
+      this.tcl.$.set("_result", [
+        "mvs",
+        "ollipekka",
+        "mdl",
+        "danh",
+        "t12",
+        "snb",
+        "mwnd",
+      ]);
+    });
+
+    this.tcl.evalSync(`
+      proc core::sha1 {val} { __sha1 $val; return $_result }
+      proc names {} { __names; return [split $_result ","] }
+    `);
   }
 
   async loadState() {
@@ -51,11 +71,15 @@ export class Interp {
 
     // let procsScript = `namespace eval buttes {`;
     let procsScript = ``;
-    const procNames: string[] = [];
+    // const procNames: string[] = [];
     Object.entries(procs).forEach(([name, body]) => {
       if (!name || name === "{}") return;
-      procsScript += `proc {${name}} ${body}\n`;
-      procNames.push(`{${name}}`);
+      const cmd = `proc {${name}} ${body}\n`;
+      if (name == "megalump") console.log(cmd);
+
+      procsScript += cmd;
+      // procNames.push(`{${name}}`);
+
       try {
         // this.tcl.evalSync(`proc {${name}} ${body}`);
       } catch (ex) {
@@ -104,10 +128,12 @@ export class Interp {
 
   eval(cmd: string, ctx?: EvalContext): string {
     // set exec context
-    this.tcl.evalSync(`namespace eval context {
+    this.tcl.evalSync(`
+    namespace eval context {
       set nick ${ctx?.nick ? `<@${ctx.nick}>` : "you"}
       set channel ${ctx?.channel ? `<#${ctx.channel}>` : "#tcl"}
-    }`);
+    }
+    `);
 
     // const toEval = "namespace eval commands {" + cmd + "};";
     const toEval = cmd;

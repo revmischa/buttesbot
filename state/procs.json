@@ -371,7 +371,7 @@
   "bubble_letters": "str {return \"( [regsub -all {\\|   \\|} [join [split $str {}] \" | \"] {) (}] )\"}\n",
   "big_smd": "{} {if { [nick] eq \"engimo\" } { bt engimo is a faggot } else { ajoin \" \" [sdraw {0 0 11111 00001 00001}] [bt (] [sdraw {00100 001}] [bt ~`\\;)]  [sdraw {0 0 11111000000 1 1}] [bt s my d] }}\n",
   "crw_litany": "{} { litany {[crw_word]} }\n",
-  "xset": "args {if {[llength $args] < 2} {error \"wrong # args: should be \\\"xset var1 ... list\\\"\"}; set vars [lrange $args 0 end-1]; set list [lindex $args end]; foreach var $vars {set value [lindex $list 0]; set list [lrange $list 1 end]; uplevel [list set $var $value]}}\n",
+  "xset": "args {if {[llength $args] < 2} {error \"wrong ## of args: should be \\\"xset var1 ... list\\\"\"}; set vars [lrange $args 0 end-1]; set list [lindex $args end]; foreach var $vars {set value [lindex $list 0]; set list [lrange $list 1 end]; uplevel [list set $var $value]}}\n",
   "nicks": "{} {return $::nicks}",
   "rot:C": "{} { return $::rotC; }\n",
   "Zonurus": "{} {pick 1 {. PUNTME PICKS FRUIT} 10 {. !Zonurus tcl Zonurus}}\n",

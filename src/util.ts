@@ -1,7 +1,7 @@
 import crypto, { BinaryLike } from "node:crypto";
 
-export function sha1Base64(input: BinaryLike) {
+export function sha1(input: BinaryLike): string {
   const hash = crypto.createHash("sha1");
   const data = hash.update(input);
-  return data.digest().toString("base64");
+  return data.digest("hex");
 }
