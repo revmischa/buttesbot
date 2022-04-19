@@ -1,7 +1,8 @@
 source $SMEGGDROP_ROOT/meta_proc.tcl
 
-foreach script [glob -nocomplain $SMEGGDROP_ROOT/commands/*.tcl] {
-  source $script
+# foreach script [glob -nocomplain $SMEGGDROP_ROOT/commands/*.tcl] {
+foreach script [list cache.tcl dict.tcl encoding.tcl history.tcl log.tcl meta.tcl] {
+  source "$SMEGGDROP_ROOT/commands/$script"
 }
 
 namespace eval commands {

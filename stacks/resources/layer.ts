@@ -7,7 +7,9 @@ export class TclLayer extends LayerVersion {
     id: string,
     props: Partial<LayerVersionProps> = {}
   ) {
-    const code = Code.fromDockerBuild("layer");
+    const code = Code.fromDockerBuild("smeggdrop", {
+      file: "../layer/Dockerfile",
+    });
     // const code = Code.fromAsset("layer/tcl.zip");
 
     super(scope, id, {

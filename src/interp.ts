@@ -1,13 +1,20 @@
-import { loadState } from "./state";
-import { Tcl } from "tcl";
-import got from "got";
 import memoizee from "memoizee";
+import path from "path";
+import retus from "retus";
+import { Tcl } from "tcl";
+import { loadState } from "./state";
+import { sha1Base64 } from "./util";
 
 export const getInterp = memoizee(async () => {
   const interp = new Interp();
   await interp.loadState();
   return interp;
 });
+
+export interface EvalContext {
+  channel: string;
+  nick: string;
+}
 
 export class Interp {
   tcl;
@@ -16,14 +23,56 @@ export class Interp {
   constructor() {
     this.tcl = new Tcl();
     this.urlMap = {};
+
+    this.loadSmeggdropTcl();
+    this.setBuiltins();
+  }
+
+  protected loadSmeggdropTcl() {
+    const smeggdropRoot = process.env.SMEGGDROP_ROOT || "./smeggdrop";
+    this.tcl.$.set("SMEGGDROP_ROOT", smeggdropRoot);
+    this.tcl.source(path.join(smeggdropRoot, "commands.tcl"));
+  }
+
+  protected setBuiltins() {
+    this.tcl.proc("core::curl", (url: string) => {
+      const res = retus(url); // synchronous
+      const body = res.body as string;
+      const val = body.replace(/"/g, '\\"');
+      this.tcl.$.set("result", `{${res.statusCode} "${val}"}`);
+    });
+    this.tcl.proc("core::sha1", (val: string): string => {
+      return sha1Base64(val);
+    });
   }
 
   async loadState() {
     const { procs, vars } = await loadState();
+
+    // let procsScript = `namespace eval buttes {`;
+    let procsScript = ``;
+    const procNames: string[] = [];
     Object.entries(procs).forEach(([name, body]) => {
       if (!name || name === "{}") return;
-      this.tcl.cmdSync(`proc {${name}} ${body}`);
+      procsScript += `proc {${name}} ${body}\n`;
+      procNames.push(`{${name}}`);
+      try {
+        // this.tcl.evalSync(`proc {${name}} ${body}`);
+      } catch (ex) {
+        console.error("Failed to create proc", name, ":", ex, "\nBody:", body);
+      }
     });
+    // procsScript += `}\n namespace eval commands { meta_proc buttes ${procNames.join(
+    //   " "
+    // )} }`;
+    // console.log(procsScript);
+    try {
+      this.tcl.evalSync(procsScript);
+    } catch (ex) {
+      console.error("Failed to create namespaced procs:", ex);
+    }
+
+    let varsScript = ``;
     Object.entries(vars).forEach(([name, body]) => {
       if (!name || name === "{}" || name === "procs") return;
       const splitIdx = body.indexOf(" ");
@@ -34,48 +83,37 @@ export class Interp {
       val = val.replace(/\n/g, "\\n");
 
       let cmd = "";
-      if (type === "scalar") cmd = `variable {${name}} ${val}`;
-      else if (type === "array") cmd = `variable {${name}} ${val}`;
+      if (type === "scalar") cmd = `set {${name}} ${val}`;
+      else if (type === "array") cmd = `set {${name}} [list ${val}]`;
       else throw new Error("unknown var type: " + type);
 
-      try {
-        this.tcl.evalSync(cmd);
-      } catch (ex) {
-        console.warn("Failed to set var", name, ex);
-      }
+      // this.tcl.evalSync(cmd);
+
+      varsScript += `${cmd};\n`;
     });
-    await this.loadUrls();
+
+    // console.log(varsScript);
+
+    this.tcl.evalSync(varsScript);
+    // try {
+    //   // this.tcl.evalSync(`namespace eval buttes { ${cmd} }`);
+    // } catch (ex) {
+    //   console.warn("Failed to set var", name, ex);
+    // }
   }
 
-  private async loadUrls() {
-    return Promise.all(
-      ["http://llolo.lol/tcl/fatgoon.tcl"].map(async (url) => {
-        const { body } = await got(url);
-        this.urlMap[url] = body;
-      })
-    );
-  }
-
-  eval(cmd: string): string {
+  eval(cmd: string, ctx?: EvalContext): string {
     // set exec context
-    this.tcl.cmdSync(`namespace eval context {
-      variable nick "you"
-      set nick "you"
+    this.tcl.evalSync(`namespace eval context {
+      set nick ${ctx?.nick ? `<@${ctx.nick}>` : "you"}
+      set channel ${ctx?.channel ? `<#${ctx.channel}>` : "#tcl"}
     }`);
 
-    // fake curl
-    this.tcl.proc("core::curl", async (url: string) => {
-      if (!this.urlMap[url]) {
-        console.warn("No mapped URL", url);
-        this.tcl.$.set("result", `{404 "not mapped"}`);
-        return;
-      }
-      const response = this.urlMap[url];
-      const val = response.replace(/"/g, '\\"');
-      this.tcl.$.set("result", `{200 "${val}"}`);
-    });
+    // const toEval = "namespace eval commands {" + cmd + "};";
+    const toEval = cmd;
+    console.log("toEval:", `'${toEval}'`);
 
-    const res = this.tcl.evalSync(cmd);
+    const res = this.tcl.evalSync(toEval);
     return res.data();
   }
 

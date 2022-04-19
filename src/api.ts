@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { GenericMessageEvent } from "@slack/bolt";
 import { WebClient } from "@slack/web-api";
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import memoizee from "memoizee";
-import { getInterp } from "./interp";
+import { EvalContext, getInterp } from "./interp";
 import { getSecrets } from "./secret";
 
 const getSlackWeb = memoizee(async () => {
@@ -13,7 +14,7 @@ const getSlackWeb = memoizee(async () => {
 export const eventHandler: APIGatewayProxyHandlerV2 = async (event) => {
   const { body } = event;
   const bodyParsed = JSON.parse(body || "{}");
-  const { token, type, challenge, event: slackEvent } = bodyParsed;
+  const { type, challenge, event: slackEvent } = bodyParsed;
 
   if (!type) throw new Error("Missing event type");
 
@@ -21,7 +22,7 @@ export const eventHandler: APIGatewayProxyHandlerV2 = async (event) => {
     case "url_verification":
       return { statusCode: 200, body: challenge };
     case "event_callback":
-      console.log("slackEvent", slackEvent);
+      // console.log("slackEvent", slackEvent);
       await handleMessage(slackEvent);
       break;
   }
@@ -37,26 +38,33 @@ const handleMessage = async (event: GenericMessageEvent) => {
   const interp = await getInterp();
   if (!event.text?.toLocaleLowerCase().startsWith("tcl ")) return;
 
-  const [_, args] = event.text.split("tcl ", 2);
-  const nick = event.user || "you";
+  const matches = event.text.trim().match(/^\s*tcl\s*(.+)/i);
+  if (!matches?.[1]) return;
+  const toEval = matches[1].trim();
+
+  const context: EvalContext = {
+    channel: event.channel,
+    nick: event.user,
+  };
 
   // eval tcl
   let res: string, ok;
   try {
-    res = await interp.eval(`${args}`);
+    res = await interp.eval(toEval, context);
     ok = true;
+    res ||= "(no result)";
   } catch (ex) {
-    res = (ex as any).toString();
+    console.error(ex);
+    res = (ex as string).toString() || "Unknown error";
     ok = false;
   }
 
-  const escaped = res
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  const escaped = res.replace(/&/g, "&amp;").replace(/<(?![#@])/g, "&lt;");
+  // .replace(/>/g, "&gt;");
 
   const slackWeb = await getSlackWeb();
   await slackWeb.chat.postMessage({
+    text: escaped,
     blocks: [
       {
         type: "section",

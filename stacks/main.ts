@@ -24,11 +24,19 @@ export default class MainStack extends sst.Stack {
       environment: {
         SECRET_ARN: secret.secretArn,
         TCL_LIBRARY: "/opt/lib/tcl8.5",
-        SMEGGDROP_ROOT: process.env.SMEGGDROP_ROOT,
+        SMEGGDROP_ROOT: process.env.SMEGGDROP_ROOT || "/opt/lib/smeggdrop",
       },
       bundle: {
         // format: "esm",
-        externalModules: ["tcl", "node-addon-api", "bindings"],
+        externalModules: [
+          "tcl",
+          "node-addon-api",
+          "bindings",
+          "sync-rpc",
+          "retus",
+          "worker",
+          "find-port",
+        ],
         copyFiles: [{ from: "state" }],
       },
       timeout: 30,
@@ -38,10 +46,10 @@ export default class MainStack extends sst.Stack {
     // Create a HTTP API
     const api = new sst.Api(this, "Api", {
       routes: {
-        "POST /event": "src/http.eventHandler",
-        // "POST /eval": "src/http.evalHandler",
-        "GET /auth": "src/http.authHandler",
-        "GET /oauth/complete": "src/http.authCompleteHandler",
+        "POST /event": "src/api.eventHandler",
+        // "POST /eval": "src/api.evalHandler",
+        "GET /auth": "src/api.authHandler",
+        "GET /oauth/complete": "src/api.authCompleteHandler",
       },
     });
 
