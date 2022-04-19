@@ -1,14 +1,21 @@
-# Getting Started with Serverless Stack (SST)
+# ButtesBot
 
-This project was bootstrapped with [Create Serverless Stack](https://docs.serverless-stack.com/packages/create-serverless-stack).
+## Quickstart
 
-Start by installing the dependencies.
+### Start by installing the dependencies
 
 ```bash
-$ npm install
+sudo apt install tcl-dev
+npm install
 ```
 
-## Commands
+### Eval TCL
+
+```bash
+npx esmo run.ts fatgoon
+```
+
+## AWS Commands
 
 ### `npm run start`
 
@@ -39,7 +46,3 @@ Learn more about the Serverless Stack.
 - [Docs](https://docs.serverless-stack.com)
 - [@serverless-stack/cli](https://docs.serverless-stack.com/packages/cli)
 - [@serverless-stack/resources](https://docs.serverless-stack.com/packages/resources)
-
-## Community
-
-[Follow us on Twitter](https://twitter.com/ServerlessStack) or [post on our forums](https://discourse.serverless-stack.com).
